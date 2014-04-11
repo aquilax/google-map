@@ -3,20 +3,23 @@ Copyright 2013 The Polymer Authors. All rights reserved.
 Use of this source code is governed by a BSD-style
 license that can be found in the LICENSE file.
 -->
-<link rel="import" href="../polymer/polymer.html">
-
+<!--
 /**
  *
  * Google Maps element
  *
  * @class google-map
  * @blurb Element wrapper around Google Maps API.
- * @snap //polymer.github.io/google-map/components/google-map/snap.png
+ * @snap http://polymer.github.io/google-map/snap.png
  * @author The Polymer Authors
  * @categories Charts and Graphs
  *
  */
-<polymer-element name="google-map" attributes="latitude longitude zoom showCenterMarker map">
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<polymer-element name="google-map" attributes="latitude longitude zoom showCenterMarker version sensor map mapType">
   <template>
     <style>
       :host {
@@ -37,11 +40,11 @@ license that can be found in the LICENSE file.
   <script>
     (function() {
       var CALLBACK_NAME = 'polymer_google_map_callback';
-      var MAP_URL = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&sensor=false&callback=' + CALLBACK_NAME;
+      var MAP_URL = 'https://maps.googleapis.com/maps/api/js?libraries=places&callback=' + CALLBACK_NAME;
       var pendingCallbacks = [];
       var loading;
       
-      function loadMapApi(callback) {
+      function loadMapApi(callback, version, sensor) {
         if (window.google && window.google.maps) {
           callback();
           return;
@@ -50,7 +53,7 @@ license that can be found in the LICENSE file.
           loading = true;
           window[CALLBACK_NAME] = mapApiLoaded.bind(this);
           var s = document.createElement('script');
-          s.src = MAP_URL;
+          s.src = MAP_URL + '&v=' + version + '&sensor=' + sensor;
           document.head.appendChild(s);
         }
         pendingCallbacks.push(callback);
@@ -68,22 +71,25 @@ license that can be found in the LICENSE file.
         longitude: '-122.41942',
         zoom: 10,
         showCenterMarker: false,
+        mapType: 'roadmap', // roadmap, satellite, hybrid, terrain
+        version: '3.exp',
+        sensor: false,
         observe: {
           latitude: 'updateCenter',
           longitude: 'updateCenter'
         },
         ready: function() {
-          loadMapApi(this.mapReady.bind(this));
+          loadMapApi(this.mapReady.bind(this), this.version, this.sensor);
         },
-        enteredView: function() {
+        attached: function() {
           this.resize();
         },
         mapReady: function() {
           this.map = new google.maps.Map(this.$.map, {
             zoom: this.zoom,
-            center: new google.maps.LatLng(this.latitude, this.longitude)
+            mapTypeId: this.mapType
           });
-          this.showCenterMarkerChanged();
+          this.updateCenter();
           this.fire('google-map-ready');
         },
         resize: function() {
@@ -93,7 +99,7 @@ license that can be found in the LICENSE file.
           }
         },
         updateCenter: function() {
-          if (!this.map) {
+          if (!this.map || !this.latitude || !this.longitude) {
             return;
           }
           this.map.setCenter(
@@ -103,6 +109,11 @@ license that can be found in the LICENSE file.
         zoomChanged: function() {
           if (this.map) {
             this.map.setZoom(Number(this.zoom));
+          }
+        },
+        mapTypeChanged: function() {
+          if (this.map) {
+            this.map.setMapTypeId(this.mapType);
           }
         },
         showCenterMarkerChanged: function() {
