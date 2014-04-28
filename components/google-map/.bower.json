@@ -5,11 +5,11 @@
     "polymer": "Polymer/polymer#master"
   },
   "homepage": "https://github.com/Polymer/google-map",
-  "_release": "6b97a88e9a",
+  "_release": "5f2f47ffba",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "6b97a88e9a79bddcc476ef8f7eab201e267f49c4"
+    "commit": "5f2f47ffba7c541fe5f531326c764fdd059c2757"
   },
   "_source": "git://github.com/Polymer/google-map.git",
   "_target": "master",
